@@ -1,43 +1,46 @@
-from itertools import count
+import logging
+from dataclasses import dataclass
+from typing import Optional
 
+import hypercorn.config
 import trio
-from hypercorn.config import Config
 from hypercorn.trio import serve as hypercorn_serve
 
-from .echo import echo_handler
-from .web import app
+from .echo import configure_echo_handler
+from .web import configure_asgi_app
 
-ECHO_PORT = 4000
-HTTPS_PORT = 4001
-
-CONNECTION_ID_SEQUENCE = count()
-
-config = Config()
-config.bind = [f"localhost:{HTTPS_PORT}"]
+logger = logging.getLogger(__name__)
 
 
-async def wrapped_echo_handler(stream):
-    """A wrapped echo handler that logs and catches errors"""
-    ident = next(CONNECTION_ID_SEQUENCE)
-    print(f"echo_server {ident}: started")
-    try:
-        await echo_handler(stream)
-        print(f"echo_server {ident}: connection closed")
-    except trio.TooSlowError:
-        print(f"echo_server {ident}: closing idle connection")
-    except Exception as exc:
-        print(f"echo_server {ident}: crashed: {exc!r}")
+@dataclass
+class ServerConfig:
+    ECHO_PORT: int = 0
+    HTTP_PORT: Optional[int] = None
 
 
-async def server(task_status=trio.TASK_STATUS_IGNORED):
+async def server(config: ServerConfig, task_status=trio.TASK_STATUS_IGNORED):
+    """A TCP server with listeners for echo and HTTP connections"""
+    echo_handler = configure_echo_handler()
+    asgi_app, shutdown_event = configure_asgi_app()
+
+    hypercorn_config = hypercorn.config.Config()
+    hypercorn_config.bind = (
+        [f"localhost:{config.HTTP_PORT}"] if config.HTTP_PORT else ["localhost"]
+    )
+
     async with trio.open_nursery() as nursery:
         # Start the echo server
-        await nursery.start(trio.serve_tcp, wrapped_echo_handler, ECHO_PORT)
-        task_status.started()
+        echo_listener: trio.SocketListener = (
+            await nursery.start(trio.serve_tcp, echo_handler, config.ECHO_PORT)
+        )[0]
+        logger.info(
+            f"Listening for echo traffic on {echo_listener.socket.getsockname()}"
+        )
+        # Signal that we've begun serving echo traffic
+        task_status.started(echo_listener)
         # Start the web server
-        app.state.shutdown_requested = trio.Event()
         await hypercorn_serve(
-            app, config, shutdown_trigger=app.state.shutdown_requested.wait
+            asgi_app, hypercorn_config, shutdown_trigger=shutdown_event.wait
         )
         # Shut down echo server when web server finishes
         nursery.cancel_scope.cancel()

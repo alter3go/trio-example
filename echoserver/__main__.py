@@ -2,6 +2,10 @@
 https://trio.readthedocs.io/en/stable/tutorial.html."""
 import trio
 
-from . import server
+from . import ServerConfig, server
 
-trio.run(server)
+config = ServerConfig(
+    ECHO_PORT=4000,
+    HTTP_PORT=4001,
+)
+trio.run(server, config)
