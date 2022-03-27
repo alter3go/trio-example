@@ -73,7 +73,7 @@ async def test_wrapped_echo_server_runs_after_timeout(
 
 
 async def test_wrapped_echo_server_runs_after_disconnect(autojump_clock, echo_port):
-    """An exception in a handler does not kill the whole server"""
+    """An client disconnection does not kill the whole server"""
     async with await trio.open_tcp_stream("localhost", echo_port):
         pass
 
