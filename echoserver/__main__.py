@@ -1,4 +1,5 @@
-from functools import partial
+"""A trio example adapted and modified from the echo server from the tutorial at
+https://trio.readthedocs.io/en/stable/tutorial.html."""
 from itertools import count
 
 import hypercorn.trio as hypercorn_trio
@@ -64,8 +65,7 @@ async def echo_handler(stream: trio.SocketStream):
 async def main():
     async with trio.open_nursery() as nursery:
         # Start the echo server
-        serve_echo = partial(trio.serve_tcp)
-        nursery.start_soon(serve_echo, echo_handler, ECHO_PORT)
+        nursery.start_soon(trio.serve_tcp, echo_handler, ECHO_PORT)
         # Start the web server
         await hypercorn_trio.serve(
             app, config, shutdown_trigger=WEB_SERVER_SHUTDOWN_EVENT.wait

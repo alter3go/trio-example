@@ -10,7 +10,7 @@ versions of Python on your system.
 ```sh
 $ poetry shell
 $ poetry install
-$ pre-commit install-hooks
+$ pre-commit install
 ``` 
 
 # Running
