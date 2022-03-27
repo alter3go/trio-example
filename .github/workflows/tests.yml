@@ -1,0 +1,26 @@
+---
+name: Tests
+on: [push]
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+      - run: pip install poetry
+      - uses: actions/cache@v2.1.7
+        id: poetry-cache
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+      - run: poetry install
+      - uses: actions/cache@v2.1.7
+        with:
+          path: ~/.cache/pre-commit
+          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+      - run: poetry run pre-commit run --all-files
+      - run: poetry run pytest

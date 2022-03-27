@@ -1,5 +1,6 @@
 Trio example
 ============
+![Tests](https://github.com/alter3go/trio-example/actions/workflows/tests.yml/badge.svg)
 
 # Setup
 
@@ -11,19 +12,19 @@ versions of Python on your system.
 $ poetry shell
 $ poetry install
 $ pre-commit install
-``` 
+```
 
 # Running
 
 To run the echo server on port 4000, with an HTTP server on port 4001:
 
-```
+```sh
 $ python -m echoserver
 ```
 
 Use netcat to connect to the echo server:
 
-```
+```sh
 $ nc localhost 4000
 hey there
 hey there
@@ -39,3 +40,10 @@ $ curl -X POST 'http://localhost:4001/die'
 bye bye
 ```
 
+# Testing
+
+To run the tests:
+
+```sh
+$ pytest
+```
