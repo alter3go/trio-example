@@ -7,8 +7,8 @@ import trio
 from . import ServerConfig, server
 
 config = ServerConfig(
-    ECHO_PORT=os.getenv("ECHOSERVER_ECHO_PORT", 4000),
-    HTTP_PORT=os.getenv("ECHOSERVER_HTTP_PORT", 4001),
+    ECHO_PORT=int(os.getenv("ECHOSERVER_ECHO_PORT", 4000)),
+    HTTP_PORT=int(os.getenv("ECHOSERVER_HTTP_PORT", 4001)),
     IDLE_TIMEOUT_REFRESH_SECONDS=float(
         os.getenv("ECHOSERVER_IDLE_TIMEOUT_SECONDS", 30)
     ),

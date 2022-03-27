@@ -2,6 +2,7 @@ import logging
 from typing import Tuple
 
 import trio
+from hypercorn.typing import ASGIFramework
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse, Response
@@ -22,8 +23,8 @@ async def die(request: Request) -> Response:
     return PlainTextResponse("bye bye")
 
 
-def configure_asgi_app() -> Tuple[Starlette, trio.Event]:
-    app = Starlette(
+def configure_asgi_app() -> Tuple[ASGIFramework, trio.Event]:
+    app: ASGIFramework = Starlette(  # type: ignore
         debug=True,
         routes=[
             Route("/healthcheck", healthcheck),
