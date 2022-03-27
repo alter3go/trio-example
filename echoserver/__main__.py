@@ -21,7 +21,7 @@ WEB_SERVER_SHUTDOWN_EVENT = trio.Event()
 
 async def healthcheck(_: Request) -> Response:
     """A simple healthcheck HTTP endpoint"""
-    return PlainTextResponse(f"ok computer")
+    return PlainTextResponse("ok computer")
 
 
 async def die(_: Request) -> Response:
