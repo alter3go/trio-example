@@ -6,7 +6,7 @@ import hypercorn.config
 import trio
 from hypercorn.trio import serve as hypercorn_serve
 
-from .echo import configure_echo_handler
+from .echo import Timeouts, configure_echo_handler
 from .web import configure_asgi_app
 
 logger = logging.getLogger(__name__)
@@ -14,13 +14,20 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ServerConfig:
+    IDLE_TIMEOUT_SECONDS: float
+    IDLE_TIMEOUT_REFRESH_SECONDS: float
     ECHO_PORT: int = 0
     HTTP_PORT: Optional[int] = None
 
 
 async def server(config: ServerConfig, task_status=trio.TASK_STATUS_IGNORED):
     """A TCP server with listeners for echo and HTTP connections"""
-    echo_handler = configure_echo_handler()
+    echo_handler = configure_echo_handler(
+        Timeouts(
+            idle_timeout_seconds=config.IDLE_TIMEOUT_SECONDS,
+            idle_timeout_refresh_seconds=config.IDLE_TIMEOUT_REFRESH_SECONDS,
+        )
+    )
     asgi_app, shutdown_event = configure_asgi_app()
 
     hypercorn_config = hypercorn.config.Config()
@@ -33,9 +40,8 @@ async def server(config: ServerConfig, task_status=trio.TASK_STATUS_IGNORED):
         echo_listener: trio.SocketListener = (
             await nursery.start(trio.serve_tcp, echo_handler, config.ECHO_PORT)
         )[0]
-        logger.info(
-            f"Listening for echo traffic on {echo_listener.socket.getsockname()}"
-        )
+        echo_port = echo_listener.socket.getsockname()[0]
+        logger.info(f"Listening for echo traffic on localhost:{echo_port}")
         # Signal that we've begun serving echo traffic
         task_status.started(echo_listener)
         # Start the web server

@@ -1,7 +1,6 @@
 import logging
 from dataclasses import dataclass
 from itertools import count
-from typing import Optional
 
 import trio
 
@@ -9,32 +8,29 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class EchoHandlerConfig:
-    INITIAL_IDLE_TIMEOUT: float = 5
-    REFRESH_IDLE_TIMEOUT: float = 30
+class Timeouts:
+    idle_timeout_seconds: float
+    idle_timeout_refresh_seconds: float
 
 
 async def echo_handler(
     stream: trio.SocketStream,
-    config: Optional[EchoHandlerConfig] = None,
+    timeouts: Timeouts,
     task_status=trio.TASK_STATUS_IGNORED,
 ):
     """An echo server connection handler with idle timeouts."""
-    config = config or EchoHandlerConfig()
-
     with trio.fail_after(
-        config.INITIAL_IDLE_TIMEOUT
+        timeouts.idle_timeout_seconds
     ) as timeout:  # only wait so long for initial data
         task_status.started()
         async for data in stream:
             timeout.deadline = (
-                trio.current_time() + config.REFRESH_IDLE_TIMEOUT
+                trio.current_time() + timeouts.idle_timeout_refresh_seconds
             )  # extend deadline
             await stream.send_all(data)
 
 
-def configure_echo_handler(config: Optional[EchoHandlerConfig] = None):
-    config = config or EchoHandlerConfig()
+def configure_echo_handler(timeouts: Timeouts):
     CONNECTION_ID_SEQUENCE = count()
 
     async def wrapped_echo_handler(stream):
@@ -42,7 +38,7 @@ def configure_echo_handler(config: Optional[EchoHandlerConfig] = None):
         ident = next(CONNECTION_ID_SEQUENCE)
         logger.info(f"echo_server {ident}: started")
         try:
-            await echo_handler(stream, config)
+            await echo_handler(stream, timeouts)
             logger.info(f"echo_server {ident}: connection closed")
         except trio.TooSlowError:
             logger.warning(f"echo_server {ident}: closing idle connection")

@@ -6,12 +6,21 @@ import trio
 
 from echoserver import ServerConfig
 from echoserver import server as server_under_test
+from echoserver.echo import Timeouts
 
 
 @pytest.fixture
-async def echo_port(nursery):
+def server_config(timeouts: Timeouts) -> ServerConfig:
+    return ServerConfig(
+        IDLE_TIMEOUT_SECONDS=timeouts.idle_timeout_seconds,
+        IDLE_TIMEOUT_REFRESH_SECONDS=timeouts.idle_timeout_refresh_seconds,
+    )
+
+
+@pytest.fixture
+async def echo_port(nursery, server_config):
     """Starts a server and yields the port for the echo server"""
-    listener = await nursery.start(server_under_test, ServerConfig())
+    listener = await nursery.start(server_under_test, server_config)
     yield listener.socket.getsockname()[1]  # yield the port
 
 
@@ -30,10 +39,10 @@ async def test_echo(echo_port):
     assert await stream.receive_some() == b"testing 123"
 
 
-async def test_server_dies_on_command():
+async def test_server_dies_on_command(server_config):
     """The entire server dies when told to do so via HTTP endpoint"""
     async with trio.open_nursery() as nursery:
-        await nursery.start(server_under_test, ServerConfig())
+        await nursery.start(server_under_test, server_config)
         async with httpx.AsyncClient() as client:
             r: httpx.Response = await client.post("http://localhost:8000/die")
             assert r.status_code == 200
@@ -53,10 +62,12 @@ async def test_wrapped_echo_server_handles_exceptions(autojump_clock, echo_port)
     await trio.open_tcp_stream("localhost", echo_port)  # Still able to connect
 
 
-async def test_wrapped_echo_server_runs_after_timeout(autojump_clock, echo_port):
+async def test_wrapped_echo_server_runs_after_timeout(
+    autojump_clock, echo_port, timeouts: Timeouts
+):
     """An exception in a handler does not kill the whole server"""
     async with await trio.open_tcp_stream("localhost", echo_port):
-        await trio.sleep(5)
+        await trio.sleep(timeouts.idle_timeout_seconds * 10)  # sooo timed out!
 
     await trio.open_tcp_stream("localhost", echo_port)  # Still able to connect
 
