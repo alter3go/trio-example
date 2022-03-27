@@ -2,59 +2,28 @@
 https://trio.readthedocs.io/en/stable/tutorial.html."""
 from itertools import count
 
-import hypercorn.trio as hypercorn_trio
 import trio
 from hypercorn.config import Config
-from starlette.applications import Starlette
-from starlette.requests import Request
-from starlette.responses import PlainTextResponse, Response
-from starlette.routing import Route
+from hypercorn.trio import serve as hypercorn_serve
+
+from echoserver.echo import echo_handler
+from echoserver.web import WEB_SERVER_SHUTDOWN_EVENT, app
 
 ECHO_PORT = 4000
-ECHO_INITIAL_IDLE_TIMEOUT = 5
-ECHO_REFRESH_IDLE_TIMEOUT = 30
 HTTPS_PORT = 4001
 
 CONNECTION_ID_SEQUENCE = count()
 
-WEB_SERVER_SHUTDOWN_EVENT = trio.Event()
-
-
-async def healthcheck(_: Request) -> Response:
-    """A simple healthcheck HTTP endpoint"""
-    return PlainTextResponse("ok computer")
-
-
-async def die(_: Request) -> Response:
-    """An HTTP endpoint that tells the echo server to shut down"""
-    print("Shutting down by request")
-    WEB_SERVER_SHUTDOWN_EVENT.set()
-    return PlainTextResponse("bye bye")
-
-
-app = Starlette(
-    debug=True,
-    routes=[
-        Route("/healthcheck", healthcheck),
-        Route("/die", die, methods=["POST"]),
-    ],
-)
 config = Config()
 config.bind = [f"localhost:{HTTPS_PORT}"]
 
 
-async def echo_handler(stream: trio.SocketStream):
+async def wrapped_echo_handler(stream):
+    """A wrapped echo handler that logs and catches errors"""
     ident = next(CONNECTION_ID_SEQUENCE)
     print(f"echo_server {ident}: started")
     try:
-        with trio.fail_after(
-            ECHO_INITIAL_IDLE_TIMEOUT
-        ) as timeout:  # only wait so long for initial data
-            async for data in stream:
-                timeout.deadline = (
-                    trio.current_time() + ECHO_REFRESH_IDLE_TIMEOUT
-                )  # extend deadline
-                await stream.send_all(data)
+        await echo_handler(stream)
         print(f"echo_server {ident}: connection closed")
     except trio.TooSlowError:
         print(f"echo_server {ident}: closing idle connection")
@@ -65,9 +34,9 @@ async def echo_handler(stream: trio.SocketStream):
 async def main():
     async with trio.open_nursery() as nursery:
         # Start the echo server
-        nursery.start_soon(trio.serve_tcp, echo_handler, ECHO_PORT)
+        nursery.start_soon(trio.serve_tcp, wrapped_echo_handler, ECHO_PORT)
         # Start the web server
-        await hypercorn_trio.serve(
+        await hypercorn_serve(
             app, config, shutdown_trigger=WEB_SERVER_SHUTDOWN_EVENT.wait
         )
         # Shut down echo server when web server finishes
