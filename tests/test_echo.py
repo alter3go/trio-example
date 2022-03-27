@@ -45,7 +45,7 @@ async def test_with_lockstep_stream(nursery):
     client_stream, server_stream = trio.testing.lockstep_stream_pair()
     received = b""
 
-    nursery.start_soon(echo_handler, server_stream)
+    await nursery.start(echo_handler, server_stream)
     await client_stream.send_all(b"Hello, ")
     while received != b"Hello, ":
         received += await client_stream.receive_some()

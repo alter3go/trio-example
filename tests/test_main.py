@@ -1,3 +1,5 @@
+from unittest import mock
+
 import httpx
 import trio
 
@@ -31,3 +33,34 @@ async def test_server_dies_on_command():
             assert r.text == "bye bye"
     # The test will hang here if the server is still running, otherwise it will
     # fall off the end of the nursery
+
+
+async def test_wrapped_echo_server_handles_exceptions(nursery, autojump_clock):
+    """An exception in a handler does not kill the whole server"""
+    await nursery.start(server)
+
+    with mock.patch("echoserver.echo_handler", side_effect=Exception) as echo_handler:
+        await trio.open_tcp_stream("localhost", 4000)
+
+    assert echo_handler.call_count == 1
+    await trio.open_tcp_stream("localhost", 4000)  # Still able to connect
+
+
+async def test_wrapped_echo_server_runs_after_timeout(nursery, autojump_clock):
+    """An exception in a handler does not kill the whole server"""
+    await nursery.start(server)
+
+    async with await trio.open_tcp_stream("localhost", 4000):
+        await trio.sleep(5)
+
+    await trio.open_tcp_stream("localhost", 4000)  # Still able to connect
+
+
+async def test_wrapped_echo_server_runs_after_disconnect(nursery, autojump_clock):
+    """An exception in a handler does not kill the whole server"""
+    await nursery.start(server)
+
+    async with await trio.open_tcp_stream("localhost", 4000):
+        pass
+
+    await trio.open_tcp_stream("localhost", 4000)  # Still able to connect

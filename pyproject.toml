@@ -19,12 +19,14 @@ pre-commit = "^2.17.0"
 pytest = "^7.1.1"
 pytest-trio = "^0.7.0"
 httpx = "^0.22.0"
+pytest-cov = "^3.0.0"
 
 [tool.isort]
 profile = "black"
 
 [tool.pytest.ini_options]
 trio_mode = true
+addopts = "--cov --cov-fail-under=100"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

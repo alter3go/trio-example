@@ -5,7 +5,7 @@ from hypercorn.config import Config
 from hypercorn.trio import serve as hypercorn_serve
 
 from .echo import echo_handler
-from .web import WEB_SERVER_SHUTDOWN_EVENT, app
+from .web import app
 
 ECHO_PORT = 4000
 HTTPS_PORT = 4001
@@ -32,11 +32,12 @@ async def wrapped_echo_handler(stream):
 async def server(task_status=trio.TASK_STATUS_IGNORED):
     async with trio.open_nursery() as nursery:
         # Start the echo server
-        nursery.start_soon(trio.serve_tcp, wrapped_echo_handler, ECHO_PORT)
+        await nursery.start(trio.serve_tcp, wrapped_echo_handler, ECHO_PORT)
         task_status.started()
         # Start the web server
+        app.state.shutdown_requested = trio.Event()
         await hypercorn_serve(
-            app, config, shutdown_trigger=WEB_SERVER_SHUTDOWN_EVENT.wait
+            app, config, shutdown_trigger=app.state.shutdown_requested.wait
         )
         # Shut down echo server when web server finishes
         nursery.cancel_scope.cancel()
