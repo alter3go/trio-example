@@ -47,8 +47,11 @@ async def test_server_dies_on_command(server_config):
             r: httpx.Response = await client.post("http://localhost:8000/die")
             assert r.status_code == 200
             assert r.text == "bye bye"
-    # The test will hang here if the server is still running, otherwise it will
-    # fall off the end of the nursery
+            # The test will hang here if the server is still running
+
+    with pytest.raises(OSError):  # error stemming from connection refusal
+        async with httpx.AsyncClient() as client:
+            await client.get("http://localhost:8000/healthcheck")
 
 
 async def test_wrapped_echo_server_handles_exceptions(autojump_clock, echo_port):
