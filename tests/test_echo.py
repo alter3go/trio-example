@@ -25,15 +25,15 @@ async def test_with_tcp_server(nursery, configured_handler):
     assert await client_stream.receive_some() == b"What is up my world"
 
 
-def timeout_floats():
-    return st.floats(min_value=0, max_value=300)
-
-
-@given(timeout_floats(), timeout_floats())
+@given(
+    st.floats(min_value=0, max_value=300),
+    st.floats(min_value=0, max_value=300),
+)
 def test_times_out_if_no_input_on_connect(
-    idle_timeout_seconds, idle_timeout_refresh_seconds
+    idle_timeout_seconds,
+    idle_timeout_refresh_seconds,
 ):
-    """The echo handler should time out in five seconds if no initial data is
+    """The echo handler should time out after `idle_timeout_seconds` if no initial data is
     received."""
     clock = trio.testing.MockClock(autojump_threshold=0)
 
@@ -53,24 +53,39 @@ def test_times_out_if_no_input_on_connect(
     trio.run(task, clock=clock)
 
 
-async def test_times_out_after_thirty_seconds_of_no_input(autojump_clock):
-    """The echo handler should time out thirty seconds after last receiving data."""
-    client_stream, server_stream = trio.testing.memory_stream_pair()
+@given(
+    st.floats(min_value=1, max_value=300),
+    st.floats(min_value=0, max_value=300),
+)
+def test_times_out_after_thirty_seconds_of_no_input(
+    idle_timeout_seconds, idle_timeout_refresh_seconds
+):
+    """The echo handler should time out `idle_timeout_refresh_seconds` after last receiving
+    data."""
+    clock = trio.testing.MockClock(autojump_threshold=0)
 
-    with pytest.raises(trio.TooSlowError):
-        async with trio.open_nursery() as nursery:
-            await nursery.start(
-                echo_handler,
-                server_stream,
-                IdleTimeout(
-                    seconds=5,
-                    refresh_seconds=30,
-                ),
-            )
-            await trio.sleep(4)
-            await client_stream.send_all(b"stay with me!")
+    async def task():
+        client_stream, server_stream = trio.testing.memory_stream_pair()
 
-    assert trio.current_time() == 34
+        with pytest.raises(trio.TooSlowError):
+            async with trio.open_nursery() as nursery:
+                await nursery.start(
+                    echo_handler,
+                    server_stream,
+                    IdleTimeout(
+                        seconds=idle_timeout_seconds,
+                        refresh_seconds=idle_timeout_refresh_seconds,
+                    ),
+                )
+                await trio.sleep(idle_timeout_seconds - 1)
+                await client_stream.send_all(b"stay with me!")
+
+        assert (
+            trio.current_time()
+            == idle_timeout_seconds - 1 + idle_timeout_refresh_seconds
+        )
+
+    trio.run(task, clock=clock)
 
 
 async def test_with_lockstep_stream(nursery, configured_handler):
