@@ -29,7 +29,7 @@ async def server(config: ServerConfig, task_status=trio.TASK_STATUS_IGNORED):
         }
     )
     echo_handler = configure_echo_handler(config.idle_timeout, hypercorn_config.log)
-    asgi_app, shutdown_event = configure_asgi_app()
+    asgi_app, shutdown_event = configure_asgi_app(hypercorn_config.log)
 
     async with trio.open_nursery() as nursery:
         # Start the echo server

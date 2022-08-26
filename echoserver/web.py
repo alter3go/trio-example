@@ -1,6 +1,7 @@
 import logging
 from typing import Tuple
 
+import hypercorn.logging
 import trio
 from hypercorn.typing import ASGIFramework
 from starlette.applications import Starlette
@@ -18,12 +19,14 @@ async def healthcheck(_: Request) -> Response:
 
 async def die(request: Request) -> Response:
     """An HTTP endpoint that tells the echo server to shut down"""
-    logger.info("Shutting down by request")
+    await request.app.state.logger.warning("Shutting down by request")
     request.app.state.shutdown_requested.set()
     return PlainTextResponse("bye bye")
 
 
-def configure_asgi_app() -> Tuple[ASGIFramework, trio.Event]:
+def configure_asgi_app(
+    logger: hypercorn.logging.Logger,
+) -> Tuple[ASGIFramework, trio.Event]:
     app: ASGIFramework = Starlette(  # type: ignore
         debug=True,
         routes=[
@@ -31,5 +34,6 @@ def configure_asgi_app() -> Tuple[ASGIFramework, trio.Event]:
             Route("/die", die, methods=["POST"]),
         ],
     )
+    app.state.logger = logger
     app.state.shutdown_requested = trio.Event()
     return app, app.state.shutdown_requested
