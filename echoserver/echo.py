@@ -2,6 +2,7 @@ import logging
 from dataclasses import dataclass
 from itertools import count
 
+import hypercorn.logging
 import trio
 
 logger = logging.getLogger(__name__)
@@ -30,19 +31,19 @@ async def echo_handler(
             await stream.send_all(data)
 
 
-def configure_echo_handler(timeouts: IdleTimeout):
+def configure_echo_handler(timeouts: IdleTimeout, logger: hypercorn.logging.Logger):
     CONNECTION_ID_SEQUENCE = count()
 
     async def wrapped_echo_handler(stream):
         """A wrapped echo handler that logs and catches errors."""
         ident = next(CONNECTION_ID_SEQUENCE)
-        logger.info(f"echo_server {ident}: started")
+        await logger.info(f"client {ident}: connected")
         try:
             await echo_handler(stream, timeouts)
-            logger.info(f"echo_server {ident}: connection closed")
+            await logger.info(f"client {ident}: connection closed")
         except trio.TooSlowError:
-            logger.warning(f"echo_server {ident}: closing idle connection")
+            await logger.warning(f"client {ident}: closing idle connection")
         except Exception as exc:
-            logger.error(f"echo_server {ident}: crashed: {exc!r}")
+            await logger.error(f"client {ident}: crashed: {exc!r}")
 
     return wrapped_echo_handler

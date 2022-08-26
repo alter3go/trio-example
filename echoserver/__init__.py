@@ -1,7 +1,7 @@
-import logging
 from typing import Optional
 
 import hypercorn.config
+import hypercorn.logging
 import trio
 from hypercorn.trio import serve as hypercorn_serve
 from pydantic.dataclasses import dataclass
@@ -9,33 +9,38 @@ from pydantic.dataclasses import dataclass
 from .echo import IdleTimeout, configure_echo_handler
 from .web import configure_asgi_app
 
-logger = logging.getLogger(__name__)
-
 
 @dataclass
 class ServerConfig:
     echo_port: int = 4000
     http_port: Optional[int] = 4001
+    log_level: Optional[str] = "INFO"
     idle_timeout: IdleTimeout = IdleTimeout()
 
 
 async def server(config: ServerConfig, task_status=trio.TASK_STATUS_IGNORED):
     """A TCP server with listeners for echo and HTTP connections"""
-    echo_handler = configure_echo_handler(config.idle_timeout)
-    asgi_app, shutdown_event = configure_asgi_app()
-
-    hypercorn_config = hypercorn.config.Config()
-    hypercorn_config.bind = (
-        [f"localhost:{config.http_port}"] if config.http_port else ["localhost"]
+    hypercorn_config = hypercorn.config.Config.from_mapping(
+        {
+            "bind": [f"localhost:{config.http_port}"]
+            if config.http_port
+            else ["localhost"],
+            "loglevel": config.log_level,
+        }
     )
+    echo_handler = configure_echo_handler(config.idle_timeout, hypercorn_config.log)
+    asgi_app, shutdown_event = configure_asgi_app()
 
     async with trio.open_nursery() as nursery:
         # Start the echo server
         echo_listener: trio.SocketListener = (
             await nursery.start(trio.serve_tcp, echo_handler, config.echo_port)
         )[0]
-        echo_port = echo_listener.socket.getsockname()[0]
-        logger.info(f"Listening for echo traffic on localhost:{echo_port}")
+        sockname = echo_listener.socket.getsockname()
+        echo_host, echo_port = sockname[0], sockname[1]
+        await hypercorn_config.log.info(
+            f"Listening for echo traffic on {echo_host}:{echo_port}"
+        )
         # Signal that we've begun serving echo traffic
         task_status.started(echo_listener)
         # Start the web server
