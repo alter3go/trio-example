@@ -6,15 +6,12 @@ import trio
 
 from echoserver import ServerConfig
 from echoserver import server as server_under_test
-from echoserver.echo import Timeouts
+from echoserver.echo import IdleTimeout
 
 
 @pytest.fixture
-def server_config(timeouts: Timeouts) -> ServerConfig:
-    return ServerConfig(
-        IDLE_TIMEOUT_SECONDS=timeouts.idle_timeout_seconds,
-        IDLE_TIMEOUT_REFRESH_SECONDS=timeouts.idle_timeout_refresh_seconds,
-    )
+def server_config(timeouts: IdleTimeout) -> ServerConfig:
+    return ServerConfig(idle_timeout=timeouts)
 
 
 @pytest.fixture
@@ -27,7 +24,7 @@ async def echo_port(nursery, server_config):
 async def test_healthcheck(echo_port):
     """Make sure the healthcheck endpoint runs"""
     async with httpx.AsyncClient() as client:
-        r: httpx.Response = await client.get("http://localhost:8000/healthcheck")
+        r: httpx.Response = await client.get("http://localhost:4001/healthcheck")
         assert r.status_code == 200
         assert r.text == "ok computer"
 
@@ -44,14 +41,14 @@ async def test_server_dies_on_command(server_config):
     async with trio.open_nursery() as nursery:
         await nursery.start(server_under_test, server_config)
         async with httpx.AsyncClient() as client:
-            r: httpx.Response = await client.post("http://localhost:8000/die")
+            r: httpx.Response = await client.post("http://localhost:4001/die")
             assert r.status_code == 200
             assert r.text == "bye bye"
             # The test will hang here if the server is still running
 
     with pytest.raises(OSError):  # error stemming from connection refusal
         async with httpx.AsyncClient() as client:
-            await client.get("http://localhost:8000/healthcheck")
+            await client.get("http://localhost:4001/healthcheck")
 
 
 async def test_wrapped_echo_server_handles_exceptions(autojump_clock, echo_port):
@@ -66,11 +63,11 @@ async def test_wrapped_echo_server_handles_exceptions(autojump_clock, echo_port)
 
 
 async def test_wrapped_echo_server_runs_after_timeout(
-    autojump_clock, echo_port, timeouts: Timeouts
+    autojump_clock, echo_port, timeouts: IdleTimeout
 ):
     """An exception in a handler does not kill the whole server"""
     async with await trio.open_tcp_stream("localhost", echo_port):
-        await trio.sleep(timeouts.idle_timeout_seconds * 10)  # sooo timed out!
+        await trio.sleep(timeouts.seconds * 10)  # sooo timed out!
 
     await trio.open_tcp_stream("localhost", echo_port)  # Still able to connect
 

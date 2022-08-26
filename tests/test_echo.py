@@ -3,13 +3,15 @@ from functools import partial
 import pytest
 import trio
 import trio.testing
+from hypothesis import given
+from hypothesis import strategies as st
 
-from echoserver.echo import Timeouts, echo_handler
+from echoserver.echo import IdleTimeout, echo_handler
 
 
 @pytest.fixture
 def configured_handler(timeouts):
-    return partial(echo_handler, timeouts=timeouts)
+    return partial(echo_handler, idle_timeout=timeouts)
 
 
 async def test_with_tcp_server(nursery, configured_handler):
@@ -23,21 +25,32 @@ async def test_with_tcp_server(nursery, configured_handler):
     assert await client_stream.receive_some() == b"What is up my world"
 
 
-async def test_times_out_if_no_input_on_connect(autojump_clock):
+def timeout_floats():
+    return st.floats(min_value=0, max_value=300)
+
+
+@given(timeout_floats(), timeout_floats())
+def test_times_out_if_no_input_on_connect(
+    idle_timeout_seconds, idle_timeout_refresh_seconds
+):
     """The echo handler should time out in five seconds if no initial data is
     received."""
-    with pytest.raises(trio.TooSlowError):
-        async with trio.open_nursery() as nursery:
-            nursery.start_soon(
-                echo_handler,
-                trio.testing.MemoryReceiveStream(),
-                Timeouts(
-                    idle_timeout_seconds=5,
-                    idle_timeout_refresh_seconds=30,
-                ),
-            )
+    clock = trio.testing.MockClock(autojump_threshold=0)
 
-    assert trio.current_time() == 5
+    async def task():
+        with pytest.raises(trio.TooSlowError):
+            async with trio.open_nursery() as nursery:
+                nursery.start_soon(
+                    echo_handler,
+                    trio.testing.MemoryReceiveStream(),
+                    IdleTimeout(
+                        seconds=idle_timeout_seconds,
+                        refresh_seconds=idle_timeout_refresh_seconds,
+                    ),
+                )
+            assert trio.current_time() == idle_timeout_seconds
+
+    trio.run(task, clock=clock)
 
 
 async def test_times_out_after_thirty_seconds_of_no_input(autojump_clock):
@@ -49,9 +62,9 @@ async def test_times_out_after_thirty_seconds_of_no_input(autojump_clock):
             await nursery.start(
                 echo_handler,
                 server_stream,
-                Timeouts(
-                    idle_timeout_seconds=5,
-                    idle_timeout_refresh_seconds=30,
+                IdleTimeout(
+                    seconds=5,
+                    refresh_seconds=30,
                 ),
             )
             await trio.sleep(4)

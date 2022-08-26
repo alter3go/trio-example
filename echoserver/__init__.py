@@ -1,12 +1,12 @@
 import logging
-from dataclasses import dataclass
 from typing import Optional
 
 import hypercorn.config
 import trio
 from hypercorn.trio import serve as hypercorn_serve
+from pydantic.dataclasses import dataclass
 
-from .echo import Timeouts, configure_echo_handler
+from .echo import IdleTimeout, configure_echo_handler
 from .web import configure_asgi_app
 
 logger = logging.getLogger(__name__)
@@ -14,31 +14,25 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ServerConfig:
-    IDLE_TIMEOUT_SECONDS: float
-    IDLE_TIMEOUT_REFRESH_SECONDS: float
-    ECHO_PORT: int = 0
-    HTTP_PORT: Optional[int] = None
+    echo_port: int = 4000
+    http_port: Optional[int] = 4001
+    idle_timeout: IdleTimeout = IdleTimeout()
 
 
 async def server(config: ServerConfig, task_status=trio.TASK_STATUS_IGNORED):
     """A TCP server with listeners for echo and HTTP connections"""
-    echo_handler = configure_echo_handler(
-        Timeouts(
-            idle_timeout_seconds=config.IDLE_TIMEOUT_SECONDS,
-            idle_timeout_refresh_seconds=config.IDLE_TIMEOUT_REFRESH_SECONDS,
-        )
-    )
+    echo_handler = configure_echo_handler(config.idle_timeout)
     asgi_app, shutdown_event = configure_asgi_app()
 
     hypercorn_config = hypercorn.config.Config()
     hypercorn_config.bind = (
-        [f"localhost:{config.HTTP_PORT}"] if config.HTTP_PORT else ["localhost"]
+        [f"localhost:{config.http_port}"] if config.http_port else ["localhost"]
     )
 
     async with trio.open_nursery() as nursery:
         # Start the echo server
         echo_listener: trio.SocketListener = (
-            await nursery.start(trio.serve_tcp, echo_handler, config.ECHO_PORT)
+            await nursery.start(trio.serve_tcp, echo_handler, config.echo_port)
         )[0]
         echo_port = echo_listener.socket.getsockname()[0]
         logger.info(f"Listening for echo traffic on localhost:{echo_port}")

@@ -1,11 +1,11 @@
 import pytest
 
-from echoserver.echo import Timeouts
+from echoserver.echo import IdleTimeout
 
 
 @pytest.fixture
-def timeouts() -> Timeouts:
-    return Timeouts(
-        idle_timeout_seconds=1,
-        idle_timeout_refresh_seconds=5,
+def timeouts() -> IdleTimeout:
+    return IdleTimeout(
+        seconds=1,
+        refresh_seconds=5,
     )

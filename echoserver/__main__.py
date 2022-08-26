@@ -1,17 +1,17 @@
 """A trio example adapted and modified from the echo server from the tutorial at
 https://trio.readthedocs.io/en/stable/tutorial.html."""
-import os
-
 import trio
+from pydantic import BaseSettings
 
 from . import ServerConfig, server
 
-config = ServerConfig(
-    ECHO_PORT=int(os.getenv("ECHOSERVER_ECHO_PORT", 4000)),
-    HTTP_PORT=int(os.getenv("ECHOSERVER_HTTP_PORT", 4001)),
-    IDLE_TIMEOUT_REFRESH_SECONDS=float(
-        os.getenv("ECHOSERVER_IDLE_TIMEOUT_SECONDS", 30)
-    ),
-    IDLE_TIMEOUT_SECONDS=float(os.getenv("ECHOSERVER_IDLE_TIMEOUT_SECONDS", 5)),
-)
+
+class Settings(BaseSettings):
+    echoserver: ServerConfig = ServerConfig()
+
+    class Config:
+        env_nested_delimiter = "__"
+
+
+config = Settings().echoserver
 trio.run(server, config)
