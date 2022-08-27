@@ -8,7 +8,7 @@ authors = ["Kavi Laud <kavinath@gmail.com>"]
 python = "^3.9"
 trio = "^0.20.0"
 hypercorn = "^0.13.2"
-starlette = "^0.19.0"
+starlette = "^0.20.4"
 pydantic = "^1.9.0"
 
 [tool.poetry.dev-dependencies]
