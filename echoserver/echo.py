@@ -1,11 +1,8 @@
-import logging
 from dataclasses import dataclass
 from itertools import count
 
 import hypercorn.logging
 import trio
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass
