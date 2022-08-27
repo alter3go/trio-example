@@ -46,7 +46,7 @@ async def test_server_dies_on_command(server_config):
             assert r.text == "bye bye"
             # The test will hang here if the server is still running
 
-    with pytest.raises(OSError):  # error stemming from connection refusal
+    with pytest.raises(httpx.ConnectError):  # error stemming from connection refusal
         async with httpx.AsyncClient() as client:
             await client.get("http://localhost:4001/healthcheck")
 
