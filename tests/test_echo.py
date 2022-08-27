@@ -33,8 +33,8 @@ def test_times_out_if_no_input_on_connect(
     idle_timeout_seconds,
     idle_timeout_refresh_seconds,
 ):
-    """The echo handler should time out after `idle_timeout_seconds` if no initial data is
-    received."""
+    """The echo handler should time out after `idle_timeout_seconds` if no initial data
+    is received."""
     clock = trio.testing.MockClock(autojump_threshold=0)
 
     async def task():
@@ -60,8 +60,8 @@ def test_times_out_if_no_input_on_connect(
 def test_times_out_after_thirty_seconds_of_no_input(
     idle_timeout_seconds, idle_timeout_refresh_seconds
 ):
-    """The echo handler should time out `idle_timeout_refresh_seconds` after last receiving
-    data."""
+    """The echo handler should time out `idle_timeout_refresh_seconds` after last
+    receiving data."""
     clock = trio.testing.MockClock(autojump_threshold=0)
 
     async def task():
