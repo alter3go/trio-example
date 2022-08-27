@@ -65,9 +65,9 @@ async def test_wrapped_echo_server_handles_exceptions(autojump_clock, echo_port)
 async def test_wrapped_echo_server_runs_after_timeout(
     autojump_clock, echo_port, timeouts: IdleTimeout
 ):
-    """An exception in a handler does not kill the whole server"""
+    """An connection timeout does not kill the whole server"""
     async with await trio.open_tcp_stream("localhost", echo_port):
-        await trio.sleep(timeouts.seconds * 10)  # sooo timed out!
+        await trio.sleep(timeouts.seconds + 1)  # sooo timed out!
 
     await trio.open_tcp_stream("localhost", echo_port)  # Still able to connect
 
