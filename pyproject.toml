@@ -12,7 +12,7 @@ starlette = "^0.20.4"
 pydantic = "^1.9.0"
 
 [tool.poetry.dev-dependencies]
-black = "^22.1.0"
+black = "^22.8.0"
 isort = "^5.10.1"
 flake8 = "^5.0.4"
 flake8-bugbear = "^22.3.23"
