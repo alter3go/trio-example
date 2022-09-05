@@ -254,7 +254,7 @@ socks = ["socksio (>=1.0.0,<2.0.0)"]
 
 [[package]]
 name = "hypercorn"
-version = "0.14.1"
+version = "0.14.3"
 description = "A ASGI Server based on Hyper libraries and inspired by Gunicorn"
 category = "main"
 optional = false
@@ -717,7 +717,7 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "6fb6c6896f76f6e4ae9eab00608782a3ca910e459774f140ee10596e6066ab13"
+content-hash = "c28a1c77361ef7150d7dc4ee2053a34f0fd0bcbeb10b76a96a783e898aad9b46"
 
 [metadata.files]
 anyio = [
@@ -935,8 +935,8 @@ httpx = [
     {file = "httpx-0.23.0.tar.gz", hash = "sha256:f28eac771ec9eb4866d3fb4ab65abd42d38c424739e80c08d8d20570de60b0ef"},
 ]
 hypercorn = [
-    {file = "Hypercorn-0.14.1-py3-none-any.whl", hash = "sha256:b71b61698a9fb498564762cef0d18e52e416ab7301e2e55744c92ccaded11b2c"},
-    {file = "Hypercorn-0.14.1.tar.gz", hash = "sha256:1132a64316c8c6db79b5b4f2f6be77d4d99854a6add7fcdcfc9612e728e5cf10"},
+    {file = "Hypercorn-0.14.3-py3-none-any.whl", hash = "sha256:7c491d5184f28ee960dcdc14ab45d14633ca79d72ddd13cf4fcb4cb854d679ab"},
+    {file = "Hypercorn-0.14.3.tar.gz", hash = "sha256:4a87a0b7bbe9dc75fab06dbe4b301b9b90416e9866c23a377df21a969d6ab8dd"},
 ]
 hyperframe = [
     {file = "hyperframe-6.0.1-py3-none-any.whl", hash = "sha256:0ec6bafd80d8ad2195c4f03aacba3a8265e57bc4cff261e802bf39970ed02a15"},
