@@ -21,7 +21,7 @@ pytest = "^7.1.1"
 pytest-trio = "^0.7.0"
 httpx = "^0.23.0"
 pytest-cov = "^3.0.0"
-pyright = "^1.1.233"
+pyright = "^1.1.269"
 hypothesis = "^6.40.2"
 
 [tool.isort]
