@@ -20,7 +20,7 @@ pre-commit = "^2.17.0"
 pytest = "^7.1.3"
 pytest-trio = "^0.7.0"
 httpx = "^0.23.0"
-pytest-cov = "^3.0.0"
+pytest-cov = "^4.0.0"
 pyright = "^1.1.273"
 hypothesis = "^6.56.0"
 
