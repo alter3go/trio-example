@@ -50,8 +50,6 @@ click = ">=8.0.0"
 mypy-extensions = ">=0.4.3"
 pathspec = ">=0.9.0"
 platformdirs = ">=2"
-tomli = {version = ">=1.1.0", markers = "python_full_version < \"3.11.0a7\""}
-typing-extensions = {version = ">=3.10.0.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
 colorama = ["colorama (>=0.4.3)"]
@@ -113,9 +111,6 @@ category = "dev"
 optional = false
 python-versions = ">=3.7"
 
-[package.dependencies]
-tomli = {version = "*", optional = true, markers = "python_full_version <= \"3.11.0a6\" and extra == \"toml\""}
-
 [package.extras]
 toml = ["tomli"]
 
@@ -126,17 +121,6 @@ description = "Distribution utilities"
 category = "dev"
 optional = false
 python-versions = "*"
-
-[[package]]
-name = "exceptiongroup"
-version = "1.0.0rc9"
-description = "Backport of PEP 654 (exception groups)"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-
-[package.extras]
-test = ["pytest (>=6)"]
 
 [[package]]
 name = "filelock"
@@ -283,7 +267,6 @@ python-versions = ">=3.7"
 
 [package.dependencies]
 attrs = ">=19.2.0"
-exceptiongroup = {version = ">=1.0.0rc8", markers = "python_version < \"3.11\""}
 sortedcontainers = ">=2.1.0,<3.0.0"
 
 [package.extras]
@@ -508,7 +491,7 @@ diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pyright"
-version = "1.1.276"
+version = "1.1.281"
 description = "Command line wrapper for pyright"
 category = "dev"
 optional = false
@@ -631,7 +614,6 @@ python-versions = ">=3.7"
 
 [package.dependencies]
 anyio = ">=3.4.0,<5"
-typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
 full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart", "pyyaml"]
@@ -664,7 +646,6 @@ python-versions = ">=3.7"
 async-generator = ">=1.9"
 attrs = ">=19.2.0"
 cffi = {version = ">=1.14", markers = "os_name == \"nt\" and implementation_name != \"pypy\""}
-exceptiongroup = {version = ">=1.0.0rc9", markers = "python_version < \"3.11\""}
 idna = "*"
 outcome = "*"
 sniffio = "*"
@@ -708,8 +689,8 @@ h11 = ">=0.9.0,<1"
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.9"
-content-hash = "a26f2235bcfa160ab63c7a7510bf7d3d22f0c06859cced2bc035b52af322743d"
+python-versions = "~3.11"
+content-hash = "8b991441d478ec9ae7e1fbbdc5be17698b43395764e46b9f805ea819052e73f6"
 
 [metadata.files]
 anyio = [
@@ -885,10 +866,6 @@ distlib = [
     {file = "distlib-0.3.6-py2.py3-none-any.whl", hash = "sha256:f35c4b692542ca110de7ef0bea44d73981caeb34ca0b9b6b2e6d7790dda8f80e"},
     {file = "distlib-0.3.6.tar.gz", hash = "sha256:14bad2d9b04d3a36127ac97f30b12a19268f211063d8f8ee4f47108896e11b46"},
 ]
-exceptiongroup = [
-    {file = "exceptiongroup-1.0.0rc9-py3-none-any.whl", hash = "sha256:2e3c3fc1538a094aab74fad52d6c33fc94de3dfee3ee01f187c0e0c72aec5337"},
-    {file = "exceptiongroup-1.0.0rc9.tar.gz", hash = "sha256:9086a4a21ef9b31c72181c77c040a074ba0889ee56a7b289ff0afb0d97655f96"},
-]
 filelock = [
     {file = "filelock-3.8.0-py3-none-any.whl", hash = "sha256:617eb4e5eedc82fc5f47b6d61e4d11cb837c56cb4544e39081099fa17ad109d4"},
     {file = "filelock-3.8.0.tar.gz", hash = "sha256:55447caa666f2198c5b6b13a26d2084d26fa5b115c00d065664b2124680c4edc"},
@@ -1048,8 +1025,8 @@ pyparsing = [
     {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
 pyright = [
-    {file = "pyright-1.1.276-py3-none-any.whl", hash = "sha256:d9388405ea20a55446cb7809b1746158bdf557f9162b476f5aed71173f4ffd2b"},
-    {file = "pyright-1.1.276.tar.gz", hash = "sha256:debaa08f6975dd381b9408880e36bb781ba7a1a6cf24b7868e83be41b6c8cb75"},
+    {file = "pyright-1.1.281-py3-none-any.whl", hash = "sha256:9e52d460c5201c8870a3aa053289a0595874b739314d67b0fdf531c25f17ca01"},
+    {file = "pyright-1.1.281.tar.gz", hash = "sha256:21be27aa562d3e2f1563515a118dcf9a3fd197747604ed47277d36cfe5376c7a"},
 ]
 pytest = [
     {file = "pytest-7.1.3-py3-none-any.whl", hash = "sha256:1377bda3466d70b55e3f5cecfa55bb7cfcf219c7964629b967c37cf0bda818b7"},
