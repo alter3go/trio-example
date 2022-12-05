@@ -623,7 +623,7 @@ python-versions = "*"
 
 [[package]]
 name = "starlette"
-version = "0.21.0"
+version = "0.23.0"
 description = "The little ASGI library that shines."
 category = "main"
 optional = false
@@ -709,7 +709,7 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "a26f2235bcfa160ab63c7a7510bf7d3d22f0c06859cced2bc035b52af322743d"
+content-hash = "2800629063742cf53842a715b021d8b1750fe76cf1794755ff01194218448829"
 
 [metadata.files]
 anyio = [
@@ -1121,8 +1121,8 @@ sortedcontainers = [
     {file = "sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88"},
 ]
 starlette = [
-    {file = "starlette-0.21.0-py3-none-any.whl", hash = "sha256:0efc058261bbcddeca93cad577efd36d0c8a317e44376bcfc0e097a2b3dc24a7"},
-    {file = "starlette-0.21.0.tar.gz", hash = "sha256:b1b52305ee8f7cfc48cde383496f7c11ab897cd7112b33d998b1317dc8ef9027"},
+    {file = "starlette-0.23.0-py3-none-any.whl", hash = "sha256:a0412476cff97f7296b7257b0c1e637d94da060b28767be5d70e98d1da9c4864"},
+    {file = "starlette-0.23.0.tar.gz", hash = "sha256:0e45cf465f2966e4c332ec7e72edb5c045dc9be32f6a470c1046cdd7ce51e05a"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
