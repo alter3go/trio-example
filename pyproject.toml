@@ -22,7 +22,7 @@ pytest-trio = "^0.7.0"
 httpx = "^0.23.0"
 pytest-cov = "^4.0.0"
 pyright = "^1.1.287"
-hypothesis = "^6.62.0"
+hypothesis = "^6.72.0"
 
 [tool.isort]
 profile = "black"
