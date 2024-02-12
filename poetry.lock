@@ -944,13 +944,13 @@ files = [
 
 [[package]]
 name = "starlette"
-version = "0.30.0"
+version = "0.37.1"
 description = "The little ASGI library that shines."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "starlette-0.30.0-py3-none-any.whl", hash = "sha256:cb15a5dfbd8de70c999bd1ae4b7e1ba625d74520bc57b28cc4086c7969431f2d"},
-    {file = "starlette-0.30.0.tar.gz", hash = "sha256:9cf6bd5f2fbc091c2f22701f9b7f7dfcbd304a567845cffbf89d706543fd2a03"},
+    {file = "starlette-0.37.1-py3-none-any.whl", hash = "sha256:92a816002d4e8c552477b089520e3085bb632e854eb32cef99acb6f6f7830b69"},
+    {file = "starlette-0.37.1.tar.gz", hash = "sha256:345cfd562236b557e76a045715ac66fdc355a1e7e617b087834a76a87dcc6533"},
 ]
 
 [package.dependencies]
@@ -958,7 +958,7 @@ anyio = ">=3.4.0,<5"
 typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
-full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart", "pyyaml"]
+full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7)", "pyyaml"]
 
 [[package]]
 name = "toml"
@@ -1051,4 +1051,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "e0ed65066b0e322e8711f43e02a443f16be7a1caca07dc6e5bf03cd6276b39be"
+content-hash = "0d911b1ddb08c47b1050becac2dd0ddc839f65947cd35886e4fa0730baecce4f"
